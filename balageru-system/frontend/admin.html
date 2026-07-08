@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balageru Restaurant — Staff Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  // Point this at your deployed backend. Defaults to local dev.
+  window.API_BASE = window.API_BASE || "http://localhost:5000";
+</script>
+</head>
+<body class="admin-body">
+
+<!-- LOGIN GATE -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="mark">🔥</div>
+    <h2>Staff sign in</h2>
+    <p>Balageru Restaurant kitchen &amp; front-of-house dashboard.</p>
+    <input type="text" id="gateUser" placeholder="Username" autocomplete="username">
+    <input type="password" id="gatePass" placeholder="Password" autocomplete="current-password">
+    <button class="btn btn-primary btn-block" onclick="tryLogin()">Sign in</button>
+    <p class="gate-error" id="gateError"></p>
+    <div class="gate-hint">First time setting up? <a href="#" onclick="document.getElementById('gate').classList.add('hidden');document.getElementById('setupGate').classList.remove('hidden');return false;" style="color:var(--gold)">Create the owner account →</a></div>
+  </div>
+</div>
+
+<!-- FIRST-TIME OWNER SETUP -->
+<div class="gate hidden" id="setupGate">
+  <div class="gate-card">
+    <div class="mark">🔥</div>
+    <h2>Set up Balageru</h2>
+    <p>Create the first (owner) account. You can add more staff logins afterward.</p>
+    <input type="text" id="setupName" placeholder="Full name" autocomplete="name">
+    <input type="text" id="setupUser" placeholder="Choose a username" autocomplete="username">
+    <input type="password" id="setupPass" placeholder="Choose a password (8+ characters)" autocomplete="new-password">
+    <button class="btn btn-primary btn-block" onclick="tryFirstTimeSetup()">Create owner account</button>
+    <p class="gate-error" id="setupError"></p>
+    <div class="gate-hint">Already set up? <a href="#" onclick="document.getElementById('setupGate').classList.add('hidden');document.getElementById('gate').classList.remove('hidden');return false;" style="color:var(--gold)">Back to sign in →</a></div>
+  </div>
+</div>
+
+<!-- ADMIN SHELL -->
+<div class="admin-shell hidden" id="shell">
+  <aside class="sidebar">
+    <div class="brand"><span class="mark">🔥</span> Balageru Restaurant</div>
+    <a class="side-link active" data-panel="orders" onclick="showPanel('orders')">📋 Orders</a>
+    <a class="side-link" data-panel="menu" data-requires="manager" onclick="showPanel('menu')">📖 Menu</a>
+    <a class="side-link" data-panel="tables" data-requires="manager" onclick="showPanel('tables')">🔳 Tables &amp; QR</a>
+    <a class="side-link" data-panel="reports" onclick="showPanel('reports')">📊 Reports</a>
+    <div class="side-foot">
+      <p id="whoami" style="font-size:0.76rem;color:rgba(243,236,224,0.55);margin:0 0 4px"></p>
+      <a href="index.html">← View customer site</a>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+
+    <!-- ORDERS PANEL -->
+    <section class="panel active" id="panel-orders">
+      <div class="admin-head">
+        <h1>Live orders</h1>
+        <p>Everything sent in from the customer site, dine-in or pickup.</p>
+      </div>
+      <div class="astats" id="orderStats"></div>
+      <div class="board" id="board"></div>
+    </section>
+
+    <!-- MENU PANEL -->
+    <section class="panel" id="panel-menu">
+      <div class="admin-head">
+        <h1>Menu management</h1>
+        <p>Add new dishes, edit existing ones, or mark items sold out.</p>
+      </div>
+      <div class="menu-manage-grid">
+        <div class="mm-card">
+          <h3 id="mmFormTitle">Add a menu item</h3>
+          <div class="mm-form">
+            <input type="hidden" id="mmId">
+            <div>
+              <label>Name</label>
+              <input type="text" id="mmName" placeholder="Doro Wat">
+            </div>
+            <div class="mm-row">
+              <div>
+                <label>Category</label>
+                <input type="text" id="mmCat" placeholder="Wats & Stews" list="catList">
+                <datalist id="catList"></datalist>
+              </div>
+              <div>
+                <label>Price (USD)</label>
+                <input type="number" id="mmPrice" step="0.5" min="0" placeholder="14.00">
+              </div>
+            </div>
+            <div>
+              <label>Description</label>
+              <textarea id="mmDesc" rows="2" placeholder="Short menu description"></textarea>
+            </div>
+            <div class="mm-row">
+              <div>
+                <label>Emoji icon</label>
+                <input type="text" id="mmEmoji" placeholder="🍔" maxlength="4">
+              </div>
+              <div>
+                <label>Availability</label>
+                <select id="mmAvail">
+                  <option value="true">Available</option>
+                  <option value="false">Sold out</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button class="btn btn-primary" style="flex:1" onclick="saveMenuItem()" id="mmSaveBtn">Add item</button>
+              <button class="btn btn-ghost hidden" id="mmCancelBtn" onclick="resetMenuForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mm-card">
+          <h3>Current menu (<span id="mmCount">0</span> items)</h3>
+          <div class="table-container" style="overflow-x:auto">
+            <table class="mtable">
+              <thead>
+                <tr><th>Item</th><th>Category</th><th>Price</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody id="menuTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TABLES PANEL -->
+    <section class="panel" id="panel-tables">
+      <div class="admin-head">
+        <h1>Tables &amp; QR codes</h1>
+        <p>Print a code per table. Guests scan it and their order is tagged with that table automatically.</p>
+      </div>
+      <div class="add-table-row">
+        <div class="table-field">
+          <label>Add table number</label>
+          <input type="number" id="newTableNum" min="1" placeholder="9">
+        </div>
+        <button class="btn btn-dark btn-sm" onclick="addTable()">Add table</button>
+      </div>
+      <div class="qr-grid" id="qrGrid"></div>
+    </section>
+
+    <!-- REPORTS PANEL -->
+    <section class="panel" id="panel-reports">
+      <div class="admin-head">
+        <h1>Reports</h1>
+        <p>A quick read on how the day is going.</p>
+      </div>
+      <div class="astats" id="reportStats"></div>
+      <div class="mm-card">
+        <h3>Best sellers</h3>
+        <table class="mtable">
+          <thead><tr><th>Item</th><th>Orders</th><th>Qty sold</th><th>Revenue</th></tr></thead>
+          <tbody id="bestSellersBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

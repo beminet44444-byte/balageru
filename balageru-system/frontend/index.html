@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balageru Restaurant — Self-Service Ordering</title>
+<meta name="description" content="Balageru Restaurant — authentic Ethiopian home cooking. Order online, order at your table, or browse the menu.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // Point this at your deployed backend. Defaults to local dev.
+  window.API_BASE = window.API_BASE || "http://localhost:5000";
+</script>
+</head>
+<body>
+
+<div class="ticket-bar">
+  <div class="wrap">
+    <span id="ticketLeft">BALAGERU RESTAURANT <span class="dot">●</span> SELF-SERVICE ORDERING</span>
+    <span id="ticketRight">TODAY</span>
+  </div>
+</div>
+
+<header class="site">
+  <div class="wrap nav">
+    <div class="brand"><span class="mark">☕</span> Balageru Restaurant</div>
+    <nav class="nav-links">
+      <a href="#menu">Menu</a>
+      <a href="#order">Order</a>
+      <a href="#about">About</a>
+      <a href="admin.html">Staff</a>
+    </nav>
+    <button class="cart-btn" onclick="openCart()">
+      🧾 Cart <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="section hero wrap" id="order">
+    <div>
+      <p class="eyebrow">Authentic Ethiopian home cooking</p>
+      <h1>Injera on the table,<br><em>skip the line.</em></h1>
+      <p class="lede">Browse doro wat, shiro, kitfo and more, build your order, and send it straight to the kitchen — whether you're at a table or ordering ahead for pickup.</p>
+      <div class="hero-actions">
+        <a href="#menu" class="btn btn-primary">Browse the menu</a>
+        <a href="#about" class="btn btn-ghost">How it works</a>
+      </div>
+    </div>
+
+    <div class="order-ticket">
+      <div class="tick-row">
+        <span>ORDER TYPE</span>
+        <span id="ticketId">— NEW —</span>
+      </div>
+      <h3>Start your order</h3>
+      <div class="mode-select">
+        <button class="mode-btn" id="modeDineBtn" onclick="tryManualDineIn()">🍽 Dine-in</button>
+        <button class="mode-btn active" id="modePickupBtn" onclick="setOrderMode('pickup')">🥡 Pickup</button>
+      </div>
+      <div class="table-field" id="tableField" style="display:none">
+        <label>Table</label>
+        <p style="margin:0;font-family:var(--mono);font-size:1rem;color:var(--cream)">Scan your table's QR code to dine in</p>
+      </div>
+      <p style="font-size:0.78rem;color:rgba(243,236,224,0.6);margin:0 0 4px;">
+        Scanned a table QR code? Your table is pre-filled automatically — no need to type anything.
+      </p>
+      <div class="perf">
+        <span>ITEMS IN CART</span>
+        <span id="ticketCartCount">0</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENU -->
+  <section class="section wrap" id="menu">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">The board</p>
+        <h2>Today's menu</h2>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </section>
+
+  <!-- ABOUT / PROCESS -->
+  <section class="strip" id="about">
+    <div class="wrap">
+      <div class="strip-item">
+        <p class="eyebrow">Step one</p>
+        <h4>Pick your mode</h4>
+        <p>Order at your table by scanning the code, or choose pickup and order ahead — no waiting in line either way.</p>
+      </div>
+      <div class="strip-item">
+        <p class="eyebrow">Step two</p>
+        <h4>Build your ticket</h4>
+        <p>Browse the board, add what you want, and adjust quantities right in your cart before you send it.</p>
+      </div>
+      <div class="strip-item">
+        <p class="eyebrow">Step three</p>
+        <h4>Kitchen fires it up</h4>
+        <p>Your order prints straight to the kitchen with an order number — no server needed to take it down.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>© <span id="year"></span> Balageru Restaurant. Authentic Ethiopian home cooking.</p>
+    <div class="foot-links">
+      <a href="admin.html">Staff login</a>
+      <a href="#menu">Menu</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CART DRAWER -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h3>Your order</h3>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot"></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/customer.js"></script>
+</body>
+</html>
